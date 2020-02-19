@@ -23,7 +23,7 @@ public class TestVidProc
 		BufferedImage im = null; 
 		
 		//FFmpegFrameGrabber breaks the video into frames that can be converted and then stored
-		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("10secTimer.avi"));)
+		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("30secTimer.mp4"));)
 		{		
 			//Starting the grabber
 			frameGrabber.start();
@@ -34,9 +34,7 @@ public class TestVidProc
 			
 			//Setting some stuff for FFmpegFrameRecorder to record properly 
 			rec.setFormat("mp4");
-			//rec.setVideoCodec(avcodec.AV_CODEC_ID_MPEG4);
 			rec.setFrameRate(frameGrabber.getFrameRate());
-			//rec.setSampleFormat(frameGrabber.getSampleFormat());
 			rec.setSampleRate(frameGrabber.getSampleRate());
 			rec.setVideoBitrate(frameGrabber.getVideoBitrate());
 			rec.setAudioQuality(0);
@@ -51,16 +49,10 @@ public class TestVidProc
 			
 			//Counting the frames  
 			int frameImage = 0;
-			int totalFrames = frameGrabber.getLengthInFrames();
 			//Going through each frame in video and converting to BufferedImages
 			//	and subsequently writing those images to disk
-			//for (int i = 0; i < totalFrames; ++i)
-			while((f = frameGrabber.grab()) != null)
+			while((f = frameGrabber.grabFrame()) != null)
 			{
-				//Grabbing frames into separate images
-				//frameGrabber.setFrameNumber(i);
-				//f = frameGrabber.grab();
-				
 				//Saving the frame to disk in order to do processing 
 				im = converter.convert(f); 
 				if (im != null) 
