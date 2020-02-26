@@ -4,6 +4,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
@@ -45,13 +46,20 @@ public class Recorder
 			
 			//Record the images and audio into new video file 
 			while((audioFrame = audioGrabber.grabFrame()) != null)
+			//while(im != null)
 			{
-				vidFrame = c.convert(im);
-				rec.record(vidFrame);
+				if (im != null)
+				{
+					vidFrame = c.convert(im);
+					rec.record(vidFrame, avutil.AV_PIX_FMT_RGB32_1);
+				}
+				
+				//audioFrame = audioGrabber.grabFrame(); 
 				rec.record(audioFrame); 
 				//System.out.println(imageCounter);
 				if (new File("VideoFilteredFrames\\filteredFrame"+(imageCounter)+".png").exists())
 					im = ImageIO.read(new File("VideoFilteredFrames\\filteredFrame"+(imageCounter++)+".png"));
+				else im = null;
 			}
 			
 			audioGrabber.stop(); audioGrabber.close(); 
