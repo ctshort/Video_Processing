@@ -36,7 +36,6 @@ public class Recorder
 			rec.setFormat("mp4");
 			rec.setFrameRate(30);
 			rec.setSampleRate(audioGrabber.getSampleRate());
-			//rec.setVideoBitrate(frameGrabber.getVideoBitrate());
 			rec.setAudioQuality(0);
 			rec.setAudioBitrate(audioGrabber.getAudioBitrate());
 			rec.setAudioChannels(2);
@@ -46,7 +45,6 @@ public class Recorder
 			
 			//Record the images and audio into new video file 
 			while((audioFrame = audioGrabber.grabFrame()) != null)
-			//while(im != null)
 			{
 				if (im != null)
 				{
@@ -54,9 +52,7 @@ public class Recorder
 					rec.record(vidFrame, avutil.AV_PIX_FMT_RGB32_1);
 				}
 				
-				//audioFrame = audioGrabber.grabFrame(); 
 				rec.record(audioFrame); 
-				//System.out.println(imageCounter);
 				if (new File("VideoFilteredFrames\\filteredFrame"+(imageCounter)+".png").exists())
 					im = ImageIO.read(new File("VideoFilteredFrames\\filteredFrame"+(imageCounter++)+".png"));
 				else im = null;

@@ -31,12 +31,9 @@ public class Ripper
 			audioGrabber.start(); 
 			
 			//FFmpegFrameRecorder will record the images back into video 
-			//FFmpegFrameRecorder rec = new FFmpegFrameRecorder("VideoBrokenSounds\\outputAudio.mp3", frameGrabber.getImageWidth(),	frameGrabber.getImageHeight(), 2);
 			FFmpegFrameRecorder rec = new FFmpegFrameRecorder("VideoBrokenSounds\\outputAudio.mp3", audioGrabber.getAudioChannels()); 
 			rec.setFormat("mp3");
 			rec.setAudioCodec(avcodec.AV_CODEC_ID_MP3);
-			//rec.setSampleFormat(audioGrabber.getSampleFormat());
-			//rec.setSampleRate(audioGrabber.getSampleRate());
 			rec.start();
 			
 			//Saving the video frames
