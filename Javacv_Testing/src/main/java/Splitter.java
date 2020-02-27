@@ -29,17 +29,13 @@ public class Splitter
 		
 		//Initializing grabbers and recorders 
 		Frame vidFrame = new Frame();
-		Frame audioFrame = new Frame();
 		int videoErr = 0; 
 
 
-		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("10secTimer.mp4"));
-				FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(new File("10secTimer.mp4")))
+		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("10secTimer.mp4")))
 		{
-			//Starting the grabbers
+			//(Re)Setting the grabber and recorder
 			frameGrabber.start();
-			audioGrabber.start(); 
-			
 			FFmpegFrameRecorder rec = null; 
 			
 			int vidFrameCounter = 0, totalFrames = frameGrabber.getLengthInVideoFrames();
@@ -49,9 +45,10 @@ public class Splitter
 				//Setting up the recorder 
 				//FFmpegFrameRecorder rec = new FFmpegFrameRecorder(args[1]+"\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
 				rec = new FFmpegFrameRecorder("VideoBrokenVids\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
-				setRecSettings(rec, audioGrabber);
+				setRecSettings(rec, frameGrabber);
 				rec.start(); 
 				
+				//Resetting counter
 				vidFrameCounter = 0;
 				
 				//Record the images and audio into new video file 
@@ -68,11 +65,9 @@ public class Splitter
 
 			//Closing resources
 			frameGrabber.stop(); frameGrabber.close(); 
-			audioGrabber.stop(); audioGrabber.close(); 
 		}
 		catch (Exception e)
 		{
-			System.out.println("Failure occured on sub-video: " + videoErr + "\n\n\n");
 			System.out.println("FAILURE: "+e+"\n"); 
 			e.printStackTrace();
 		}
