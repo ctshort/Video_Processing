@@ -31,7 +31,7 @@ public class Filter
         
         for (File file : files)
         {
-            myMod.runFilters(file.getPath(), args[1]+"\\filteredFrame"+(imagesFiltered++)+".png");
+            myMod.runFilters(args[0]+"\\frame"+imagesFiltered+".png", args[1]+"\\filteredFrame"+(imagesFiltered++)+".png");
         }
         
         System.out.println("DONE"); 
