@@ -4,8 +4,15 @@ public class Filter
 {
 	public static void main(String[] args) 
 	{
-		//Get list of all the frames broken into VideoBrokenFrames Directory
-		File dir = new File("VideoBrokenFrames");
+		//Checking for proper usage
+		checkProperArgs(args); 
+		
+		//Creating any necessary dirs
+		File out = new File(args[1]); 
+		if (!out.exists()) out.mkdirs();
+		
+		//Get list of all the frames broken into chosen Directory
+		File dir = new File(args[0]);
         File[] files = dir.listFiles();
  
         //Set filters 
@@ -24,10 +31,18 @@ public class Filter
         
         for (File file : files)
         {
-            myMod.runFilters("VideoBrokenFrames\\frame"+imagesFiltered+".png", "VideoFilteredFrames\\filteredFrame"+(imagesFiltered++)+".png");
+            myMod.runFilters(file.getPath(), args[1]+"\\filteredFrame"+(imagesFiltered++)+".png");
         }
         
         System.out.println("DONE"); 
 	}
 
+	private static void checkProperArgs(String[] args)
+	{
+		if (args.length != 2)
+		{
+			System.err.println("Correct Usage: Filter <dir_of_frames_to_filter> <dir_to_output_filtered_frames>"); 
+			System.exit(-1); 
+		}
+	}
 }
