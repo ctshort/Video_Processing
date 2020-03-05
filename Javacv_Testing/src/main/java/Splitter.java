@@ -15,21 +15,18 @@ public class Splitter
 	public static void main(String[] args) 
 	{
 		//Ensuring proper usage of command-line args
-		//checkProperArgs(args);
+		checkProperArgs(args);
 		
 		//Getting the first arg as int instead of string 
-		//int firstArg = getIntArg(args[0]);			//Assumed arg is num of seconds
-		int firstArg = 2; 
+		int firstArg = getIntArg(args[0]);			//Assumed arg is num of seconds
 		
 		//Checking if directory exists
-		//File dir = new File(args[1]);
-		File dir = new File("VideoBrokenVids");
+		File dir = new File(args[1]);
 		if (!dir.exists())					//If the directory doesn't exist 
 			dir.mkdirs(); 					//Create it and any other parent directories named in the command-line argument
 		
 		//Initializing grabbers and recorders 
 		Frame vidFrame = new Frame();
-		int videoErr = 0; 
 
 
 		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("10secTimer.mp4")))
@@ -38,29 +35,36 @@ public class Splitter
 			frameGrabber.start();
 			FFmpegFrameRecorder rec = null; 
 			
-			int vidFrameCounter = 0, totalFrames = frameGrabber.getLengthInVideoFrames();
-			int val = (totalFrames/((int)frameGrabber.getFrameRate()))/firstArg;
-			for (int i = 0; i < val; videoErr = i++)
+			boolean isFinished = false;
+			int i = 0, vidFrameCounter = 0, totalFrames = frameGrabber.getLengthInVideoFrames();
+			int rate = (int)frameGrabber.getFrameRate();
+			while (!isFinished)
 			{
 				//Setting up the recorder 
-				//FFmpegFrameRecorder rec = new FFmpegFrameRecorder(args[1]+"\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
-				rec = new FFmpegFrameRecorder("VideoBrokenVids\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
+				rec = new FFmpegFrameRecorder(args[1]+"\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
 				setRecSettings(rec, frameGrabber);
 				rec.start(); 
 				
-				//Resetting counter
-				vidFrameCounter = 0;
-				
 				//Record the images and audio into new video file 
-				while((vidFrame = frameGrabber.grab()) != null && vidFrameCounter < (totalFrames/val))
+				//While the video hasn't recorded the command line arg length (in secs)
+				while(vidFrameCounter < (firstArg*((i+1)*rate)) || 
+						(vidFrameCounter > (totalFrames-rate) && vidFrameCounter < totalFrames))	//OR if there aren't enough frames to get to the next second
 				{
-					rec.record(vidFrame); 
-					if(vidFrame.imageHeight != 0 && vidFrame.imageWidth != 0)
-						++vidFrameCounter; 
+					if ((vidFrame = frameGrabber.grab()) != null)
+					{
+						rec.record(vidFrame);
+						if(vidFrame.imageHeight != 0 && vidFrame.imageWidth != 0)
+							++vidFrameCounter;
+					}
+					else 
+					{
+						isFinished = true; break;					 
+					}
 				}
 				
 				//Closing recorder
 				rec.stop(); rec.close(); 
+				++i;
 			}
 
 			//Closing resources
@@ -77,16 +81,16 @@ public class Splitter
 	{
 		if (args.length != 2)
 		{
-			System.err.println("Correct usage: Splitter <number_of_broken_videos> <directory_to_generate_videos>"); 
+			System.err.println("Correct usage: Splitter <length_of_broken_videos> <directory_to_generate_videos>"); 
 			System.exit(1);
 		}
 		else
 		{
-			int value; 
-		    try { value = Integer.parseInt(args[1]); }
+		    try { int value = Integer.parseInt(args[0]); }
 		    catch (NumberFormatException e) 
 		    {
-				System.err.println("Correct usage: Splitter <number_of_broken_videos> <directory_to_generate_videos>"); 
+		    	System.out.println(args[0]);
+				System.err.println("-->Error: First argument must be an integer"); 
 				System.exit(1);
 		    }
 		}
