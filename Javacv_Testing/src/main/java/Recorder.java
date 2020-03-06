@@ -1,5 +1,7 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.imageio.ImageIO;
 
@@ -21,6 +23,7 @@ public class Recorder
 		File dir = new File(args[2]); 
 		if (!dir.exists()) dir.mkdirs();
 		
+
 		Java2DFrameConverter c = new Java2DFrameConverter(); 
 		Frame vidFrame = new Frame();
 		Frame audioFrame = new Frame(); 
@@ -59,6 +62,7 @@ public class Recorder
 					rec.record(vidFrame, avutil.AV_PIX_FMT_RGB32_1);
 				}
 				
+				rec.setTimestamp(audioGrabber.getTimestamp());
 				rec.record(audioFrame); 
 				if (new File(args[0]+"\\filteredFrame"+(imageCounter)+".png").exists())
 					im = ImageIO.read(new File(args[0]+"\\filteredFrame"+(imageCounter++)+".png"));
