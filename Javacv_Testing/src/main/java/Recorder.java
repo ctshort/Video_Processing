@@ -62,7 +62,7 @@ public class Recorder
 					rec.record(vidFrame, avutil.AV_PIX_FMT_RGB32_1);
 				}
 				
-				rec.setTimestamp(audioGrabber.getTimestamp());
+				//rec.setTimestamp(audioGrabber.getTimestamp());
 				rec.record(audioFrame); 
 				if (new File(args[0]+"\\filteredFrame"+(imageCounter)+".png").exists())
 					im = ImageIO.read(new File(args[0]+"\\filteredFrame"+(imageCounter++)+".png"));

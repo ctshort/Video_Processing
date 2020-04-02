@@ -18,10 +18,10 @@ public class Splitter
 		checkProperArgs(args);
 		
 		//Getting the first arg as int instead of string 
-		int firstArg = getIntArg(args[0]);			//Assumed arg is num of seconds
+		int firstArg = getIntArg(args[1]);			//Assumed arg is num of seconds
 		
 		//Checking if directory exists
-		File dir = new File(args[1]);
+		File dir = new File(args[2]);
 		if (!dir.exists())					//If the directory doesn't exist 
 			dir.mkdirs(); 					//Create it and any other parent directories named in the command-line argument
 		
@@ -29,7 +29,7 @@ public class Splitter
 		Frame vidFrame = new Frame();
 
 
-		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File("10secTimer.mp4")))
+		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File(args[0])))
 		{
 			//(Re)Setting the grabber and recorder
 			frameGrabber.start();
@@ -41,7 +41,7 @@ public class Splitter
 			while (!isFinished)
 			{
 				//Setting up the recorder 
-				rec = new FFmpegFrameRecorder(args[1]+"\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
+				rec = new FFmpegFrameRecorder(args[2]+"\\subVid"+i+".mp4", frameGrabber.getImageWidth(), frameGrabber.getImageHeight(), 2);
 				setRecSettings(rec, frameGrabber);
 				rec.start(); 
 				
@@ -79,14 +79,14 @@ public class Splitter
 	
 	private static void checkProperArgs(String[] args)
 	{
-		if (args.length != 2)
+		if (args.length != 3)
 		{
-			System.err.println("Correct usage: Splitter <length_of_broken_videos> <directory_to_generate_videos>"); 
+			System.err.println("Correct usage: Splitter <file_to_split> <length_of_broken_videos> <directory_to_generate_videos>"); 
 			System.exit(1);
 		}
 		else
 		{
-		    try { int value = Integer.parseInt(args[0]); }
+		    try { int value = Integer.parseInt(args[1]); }
 		    catch (NumberFormatException e) 
 		    {
 		    	System.out.println(args[0]);
@@ -111,6 +111,7 @@ public class Splitter
 	{
 		//Setting some stuff for FFmpegFrameRecorder to record properly 
 		rec.setFormat("mp4");
+		rec.setVideoQuality(0);
 		rec.setFrameRate(30);
 		rec.setSampleRate(grabber.getSampleRate());
 		rec.setAudioQuality(0);
