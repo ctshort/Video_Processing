@@ -1,0 +1,18 @@
+##################
+#
+# Example Java Condor Submit File
+# 
+###################
+
+universe = vanilla
+executable = C:\Program Files\Java\jdk-11.0.2\bin\java.exe
+arguments = Sleep in.txt out.txt 
+error = Sleep.error
+log = Sleep.log
+transfer_executable = FALSE
+copy_to_spool = FALSE
+Requirements = OpSys == "WINDOWS" && Arch == "X86_64"
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+queue
