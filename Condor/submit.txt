@@ -1,0 +1,14 @@
+##################
+#
+# Example Java Condor Submit File
+# 
+###################
+
+universe = java
+executable = Sleep.class
+arguments = in.txt out.txt 
+error = Sleep.error
+log = Sleep.log
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT 
+queue
