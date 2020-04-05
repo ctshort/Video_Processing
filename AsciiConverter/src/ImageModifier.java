@@ -63,6 +63,7 @@ public class ImageModifier
 		catch (IOException e) 
 		{ 	//Tell user something went wrong and die
 			System.out.println("Failure to run filters on image"); 
+			System.err.print(e);
 			System.exit(-1);
 		}
 	}
@@ -87,6 +88,7 @@ public class ImageModifier
 		catch (IOException e) 
 		{ 	//Tell user something went wrong and die
 			System.out.println("Failure to run filters on image"); 
+			System.err.print(e);
 			System.exit(-1);
 		}
 	}
