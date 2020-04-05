@@ -131,6 +131,23 @@ public class ASCIIFilter implements ImageFilter
         return temp; 
     }
     /**
+     * Calculates the sum of red, green, and blue values for the pixel (w, h) in img
+     * @param img the image from which the pixel is taken
+     * @param w the X coordinate of the pixel
+     * @param h the Y coordinate of the pixel
+     * @return returns INT value of R+G+B
+     */
+	private static int getRGBSum(BufferedImage img, int w, int h)
+    {
+    	Color color = null;
+    	color = new Color(img.getRGB(w, h));		//Get the color of the pixel
+		int r = color.getRed();							//	Get just the red
+		int g = color.getGreen();						//	Get just the green
+		int b = color.getBlue();						//	Get just the blue
+		
+		return (r+g+b);
+    }
+	/**
      * Calculates an average rgb dScore based on the bounds passed in representing the gridcell's boundaries
      * @param img the image from which the grid is taken
      * @param wStart the X coordinate of the starting coordinate or the leftmost X
@@ -142,18 +159,13 @@ public class ASCIIFilter implements ImageFilter
 	private static int rgbValueForBlock(BufferedImage img, int wStart, int hStart, int wStop, int hStop) 
     {
 		//Initializing some useful vars
-    	Color color = null;
-    	int r=0, g=0, b=0, rgbSum=0, rgbTotal=0;
+		int rgbSum = 0, rgbTotal = 0;
     	
 		for(int h = hStart; h < hStop; ++h)
 		{
 			for (int w = wStart; w < wStop; ++w)
 			{
-				color = new Color(img.getRGB(w, h));		//Get the color of the pixel
-				r = color.getRed();							//	Get just the red
-				g = color.getGreen();						//	Get just the green
-				b = color.getBlue();						//	Get just the blue
-				rgbSum = (r+g+b);
+				rgbSum = getRGBSum(img, w, h);
 				rgbTotal += rgbSum;
 			}
 		}
