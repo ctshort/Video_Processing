@@ -307,12 +307,12 @@ public class ASCIIFilter implements ImageFilter
 			char[] c = {x};		//Char array only to print the char onto image using g.drawChars()
 			img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
 			g = img.createGraphics();
-			g.setColor(Color.WHITE);										//Image is created with black background
+			g.setColor(Color.BLACK);										//Image is created with black background
 			g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
 			g.setFont(f);													//Setting the right font to get 50 block size
 			fMetrics = g.getFontMetrics();
 			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g.setColor(Color.BLACK);										//Essentially setting font color to black
+			g.setColor(Color.WHITE);										//Setting font color to white
 			
 			//Lists containing special or weird characters
 			List<Character> descenderLetters = createSpecialCharsList(DESCENDER_LETTERS);
@@ -351,6 +351,7 @@ public class ASCIIFilter implements ImageFilter
 			catch (IOException e) 
 			{	//Tell the user there was a problem and die 
 				System.out.println("Failure to create " + x + " char image");
+				System.err.print(e);
 				System.exit(-1);
 			}
 		}
@@ -393,16 +394,7 @@ public class ASCIIFilter implements ImageFilter
 			}
 		}		
 
-		//Sorting the grid cells from darkest to lightest
-		/*Collections.sort(grid, new Comparator<GridCell>() 
-		{	//Writing comparator for Collections.sort 
-            public int compare(GridCell o1, GridCell o2) 
-            { 
-                return o1.GetScore().compareTo(o2.GetScore()); 
-            } 
-        });*/
 
-		
 		//Creating alpha-numeric char images and sorting them 
 		alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
 		List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
