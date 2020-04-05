@@ -212,6 +212,7 @@ public class ASCIIFilter implements ImageFilter
 			{
 				//If something went wrong, tell user and die
 				System.out.println("Failure to sort char images");
+				System.err.print(e);
 				System.exit(-1);
 			}
 		}
@@ -229,6 +230,61 @@ public class ASCIIFilter implements ImageFilter
         //Returning list of sorted char images 
 		return listImgSet;
     }
+	private static List<Pair<String, Integer>> sortCharImages(char[] alphabet, int size, String[] prefixes)
+	{
+		//Data Structure to conveniently store Score Key, file name Value pairs
+				List<Pair<String, Integer>> listImgSet = new ArrayList<Pair<String,Integer>>(alphabet.length); 
+				String fileName = null;	int score = 0;
+				
+				//For every char image in alphabet -> should be: 1:1
+				for (String s : prefixes)
+				{
+					for (char x : alphabet)
+					{
+						try
+						{
+							//If x is blank (space)
+							if (x == SPACE) 										fileName = "resources\\BlankSpace.png"; 
+							//If x is in the upper case
+							else if (x >= CAPITAL_START && x <= CAPITAL_FIN) 		fileName = "resources\\Uppercase-" + s + x + ".png";
+							//If x is in the lower case
+							else if (x >= LOWERCASE_START && x <= LOWERCASE_FIN) 	fileName = "resources\\Lowercase-" + s + x + ".png";
+							//Else x is a number
+							else 													fileName = "resources\\" + s + x + ".png";
+							
+							//
+							BufferedImage img = ImageIO.read(new File(fileName));
+							
+							//Getting the score and adding it to the list
+							score = rgbValueForBlock(img, 0, 0, size, size);		//Getting the score
+							listImgSet.add(new Pair(fileName, score));	//Adding score to list
+							score = 0;												//Resetting score to 0 for next time 
+						}
+						catch (IOException e) 
+						{
+							//If something went wrong, tell user and die
+							System.out.println("Failure to sort char images");
+							System.err.print(e);
+							System.exit(-1);
+						}
+					}
+				}
+				
+				//Sorting least to greatest 
+		        Collections.sort(listImgSet, new Comparator<Map.Entry<String, Integer> >() 
+		        { 	//Writing comparator for Collections.sort
+		            public int compare(Map.Entry<String, Integer> o1,  
+		                               Map.Entry<String, Integer> o2) 
+		            { 
+		                return (o1.getValue()).compareTo(o2.getValue()); 
+		            } 
+		        }); 
+
+		        //Returning list of sorted char images 
+				return listImgSet;
+
+	}
+	
 	/**
 	 * Scales the given image to square *scale* dimensions
 	 * @param scaleImage the image to be scaled down or up
@@ -265,6 +321,9 @@ public class ASCIIFilter implements ImageFilter
     	//Return the list of chars
     	return returnList;
     }
+	
+	
+	
 	/**
 	 * Generates all the char images with *size* dimensions for each char in *alphabet*  
 	 * @param alphabet contains all chars that will be used to generate the char images
@@ -356,6 +415,106 @@ public class ASCIIFilter implements ImageFilter
 			}
 		}
 	}
+	private static void genCharImages(char[] alphabet, int size, Color bkgd, Color font, String prefix)
+	{
+		//Initializing some vars
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);		//Initializing img to create graphics instance
+		Graphics2D g = img.createGraphics();											//Will use g to do some operations on the font and later, the image
+		FontMetrics fMetrics = null; Font f = null;
+		int blockSize = 0; int z = FONT_SIZE;
+		int fontWidth=0, fontHeight=0, currCharWidth=0;
+		
+		//Automatically find correct font size to get 50x50 blocks
+		while(blockSize<50)
+		{	//Cylces through a bunch of different sizes until it finds a size of roughly 50
+			f = new Font(FONT_NAME,FONT_STYLE, z++);					//Dynamically updating the font size until reaching block size of 50
+			g.setFont(f);												//		updating the font
+			fMetrics = g.getFontMetrics();								//		saving information to graphics in case this is final Font
+			
+			//Getting the max height of any char
+			fontHeight = fMetrics.getAscent();//-fMetrics.getDescent();
+			//Getting the Width
+			for (int b = 0; b < alphabet.length; ++b)
+			{	//Checks to see which char has the widest width
+				//		Java doesn't provide helpful fonts like they do with height 
+				currCharWidth = fMetrics.charsWidth(alphabet, b, 1);
+				if (currCharWidth > fontWidth) fontWidth = currCharWidth;
+			}			
+			
+			//Get the biggest value from width and height above 
+			if (fontWidth > fontHeight) blockSize = fontWidth; 
+			else blockSize = fontHeight;
+		}
+		
+		//Drawing our AlphaNumeric Images
+		for (char x : alphabet)
+		{
+			char[] c = {x};		//Char array only to print the char onto image using g.drawChars()
+			img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
+			g = img.createGraphics();
+			g.setColor(bkgd);										//Image is created with black background
+			g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
+			g.setFont(f);													//Setting the right font to get 50 block size
+			fMetrics = g.getFontMetrics();
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g.setColor(font);										//Setting font color to white
+			
+			//Lists containing special or weird characters
+			List<Character> descenderLetters = createSpecialCharsList(DESCENDER_LETTERS);
+			List<Character> largeLetters = createSpecialCharsList(LARGE_LETTERS);
+			
+			//Drawing char images
+			//
+			//Adding some conditional statements to correctly draw some troublesome chars
+			//		that look out of place if drawn by the default
+			//
+			//For letters that extend below baseline
+			if (descenderLetters.contains(x))
+					g.drawChars(c,  0,  1,  (img.getWidth()/8),  img.getHeight()-fMetrics.getDescent());
+			//For letters that are too big to be printed in middle
+			else if (largeLetters.contains(x))
+					g.drawChars(c,  0,  1,  0,  img.getHeight()-(fMetrics.getDescent()/2));
+			else 	g.drawChars(c,  0,  1,  (img.getWidth()/5),  img.getHeight()-(fMetrics.getDescent()/2));
+			
+			g.dispose();													//Garbage cleanup
+			
+			//Scaling down to desired size 
+			img = scale(img, size);
+			
+			//Writing the written char to a tangible file 
+			try
+			{
+				//If x is blank (space)
+				if (x == SPACE) ImageIO.write(img, "png", new File("resources\\BlankSpace.png"));
+				//If x is in the upper case
+				else if (x >= CAPITAL_START && x <= CAPITAL_FIN) ImageIO.write(img, "png", new File("resources\\Uppercase-" + prefix + x + ".png"));
+				//If x is in the lower case
+				else if (x >= LOWERCASE_START && x <= LOWERCASE_FIN) ImageIO.write(img, "png", new File("resources\\Lowercase-" + prefix + x + ".png"));
+				//Else X is one of the numbers
+				else ImageIO.write(img, "png", new File("resources\\" + prefix + x + ".png"));
+			}
+			catch (IOException e) 
+			{	//Tell the user there was a problem and die 
+				System.out.println("Failure to create " + prefix + x + " char image");
+				System.err.print(e);
+				System.exit(-1);
+			}
+		}
+	}
+	private static void generateImageSets(char[] alphabet, int size)
+	{
+		genCharImages(alphabet, size, Color.BLACK, Color.DARK_GRAY, "DG"); 
+		genCharImages(alphabet, size, Color.BLACK, Color.GRAY, "G");
+		genCharImages(alphabet, size, Color.BLACK, Color.LIGHT_GRAY, "LG"); 
+		genCharImages(alphabet, size, Color.BLACK, Color.WHITE, "W"); 
+	}
+	
+	
+	
+	
+	
+	
+	
 	//Filter Code
 	
 	@Override
@@ -396,8 +555,13 @@ public class ASCIIFilter implements ImageFilter
 
 
 		//Creating alpha-numeric char images and sorting them 
-		alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
-		List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
+		//alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
+		generateImageSets(ALPHABET.toCharArray(), SIZE); 
+				
+		//List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
+		String[] prefixes = new String[] {"DG", "G", "LG", "W"} ; 
+		List<Pair<String,Integer>> charImgSet = sortCharImages(ALPHABET.toCharArray(), SIZE, prefixes);
+		
 	
 		
 		//Bucket code 
