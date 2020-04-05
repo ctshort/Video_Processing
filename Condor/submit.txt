@@ -5,7 +5,6 @@
 ###################
 
 universe = vanilla
-<<<<<<< HEAD
 executable = C:\\ProgramData\\Oracle\\Java\\javapath\\java.exe
 arguments = Sleep in.txt out.txt 
 input = Sleep.class
