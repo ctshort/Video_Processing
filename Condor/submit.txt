@@ -5,6 +5,7 @@
 ###################
 
 universe = vanilla
+<<<<<<< HEAD
 executable = C:\\ProgramData\\Oracle\\Java\\javapath\\java.exe
 arguments = Sleep in.txt out.txt 
 input = Sleep.class
@@ -18,7 +19,5 @@ copy_to_spool = FALSE
 
 Requirements = OpSys == "WINDOWS" && Arch == "X86_64"
 
-should_transfer_files = YES
-when_to_transfer_output = ON_EXIT
 
 queue
