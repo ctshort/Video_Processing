@@ -96,8 +96,8 @@ public class ASCIIFilter implements ImageFilter
 	static final String LARGE_LETTERS = "MQW";
 	//For ...
 	static final int COLOR_LIMIT = 255;
-	static final int SIZE = 10;
-	static final String ALPHABET = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	static final int SIZE = 6;
+	static final String ALPHABET = "@#%&+= 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	
 	//Functions
 	//
@@ -270,6 +270,24 @@ public class ASCIIFilter implements ImageFilter
 					}
 				}
 				
+				//Adding BLANKBLOCK to the list
+				/*try 
+				{
+					fileName = "resources\\BlankBlock.png";
+					BufferedImage i = ImageIO.read(new File(fileName)); 
+					score = rgbValueForBlock(i, 0, 0, size, size);
+					listImgSet.add(new Pair(fileName, score));	//Adding score to list
+				}
+				catch (IOException e) 
+				{
+					//If something went wrong, tell user and die
+					System.out.println("Failure to sort char images");
+					System.err.print(e);
+					System.exit(-1);
+				}*/
+				 
+				
+				
 				//Sorting least to greatest 
 		        Collections.sort(listImgSet, new Comparator<Map.Entry<String, Integer> >() 
 		        { 	//Writing comparator for Collections.sort
@@ -279,10 +297,36 @@ public class ASCIIFilter implements ImageFilter
 		                return (o1.getValue()).compareTo(o2.getValue()); 
 		            } 
 		        }); 
-
+		        
+		        
+		        
+		        
+		        //Printing the list to external file for viewing 
+		     // print the sorted list to external text file
+				File output = new File("Sort_Log.txt");
+				try
+				{
+					output.delete();
+					if (output.createNewFile())
+					{
+						PrintWriter writer = new PrintWriter(output);
+						for (int i = 0; i < listImgSet.size(); ++i)
+						{
+							writer.print(i + "-- " + listImgSet.get(i).getKey() + ": " + listImgSet.get(i).getValue() + "\n");
+						}
+				        writer.close();
+					}
+				}
+				catch (IOException e) 
+				{	//If something went wrong, tell user and die
+					System.out.println("Failure to sort char images");
+					System.err.print(e);
+					System.exit(-1);					
+				}
+				
+		        
 		        //Returning list of sorted char images 
 				return listImgSet;
-
 	}
 	
 	/**
@@ -446,6 +490,32 @@ public class ASCIIFilter implements ImageFilter
 			else blockSize = fontHeight;
 		}
 		
+		//Creating pure white block now that bkgd color is black instead of white
+		//Pre-setting some options for printing char on img
+		/*char[] blank = {' '};		//Char array only to print the char onto image using g.drawChars()
+		img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
+		g = img.createGraphics();
+		g.setColor(Color.WHITE);										//Image is created with black background
+		g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
+		g.setFont(f);													//Setting the right font to get 50 block size
+		fMetrics = g.getFontMetrics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setColor(Color.WHITE);										//Setting font color to white
+		
+		//Drawing the char on img
+		g.drawChars(blank,  0,  1,  (img.getWidth()/5),  img.getHeight()-(fMetrics.getDescent()/2));
+		g.dispose();
+		//Scaling down to desired size 
+		img = scale(img, size);
+		try { ImageIO.write(img, "png", new File("resources\\BlankBlock.png")); } 
+		catch (IOException e)
+		{ 	//Tell the user there was a problem and die 
+			System.out.println("Failure to create BLANKBLOCK char image");
+			System.err.print(e);
+			System.exit(-1);			
+		}*/
+		
+	
 		//Drawing our AlphaNumeric Images
 		for (char x : alphabet)
 		{
@@ -502,11 +572,16 @@ public class ASCIIFilter implements ImageFilter
 		}
 	}
 	private static void generateImageSets(char[] alphabet, int size)
-	{
-		genCharImages(alphabet, size, Color.BLACK, Color.DARK_GRAY, "DG"); 
+	{ 
 		genCharImages(alphabet, size, Color.BLACK, Color.GRAY, "G");
 		genCharImages(alphabet, size, Color.BLACK, Color.LIGHT_GRAY, "LG"); 
 		genCharImages(alphabet, size, Color.BLACK, Color.WHITE, "W"); 
+		genCharImages(alphabet, size, Color.GRAY, Color.BLACK, "B");
+		genCharImages(alphabet, size, Color.DARK_GRAY, Color.BLACK, "BDG");
+		genCharImages(alphabet, size, Color.LIGHT_GRAY, Color.BLACK, "BLG");
+		genCharImages(alphabet, size, Color.GRAY, Color.BLACK, "BG");
+		genCharImages(alphabet, size, Color.BLACK, Color.DARK_GRAY, "DG");
+		genCharImages(alphabet, size, Color.LIGHT_GRAY, Color.WHITE, "WLG");
 	}
 	
 	
@@ -559,7 +634,7 @@ public class ASCIIFilter implements ImageFilter
 		generateImageSets(ALPHABET.toCharArray(), SIZE); 
 				
 		//List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
-		String[] prefixes = new String[] {"DG", "G", "LG", "W"} ; 
+		String[] prefixes = new String[] {"DG", "G", "LG", "W", "B", "BDG", "BLG", "BG", "WLG"} ; 
 		List<Pair<String,Integer>> charImgSet = sortCharImages(ALPHABET.toCharArray(), SIZE, prefixes);
 		
 	
