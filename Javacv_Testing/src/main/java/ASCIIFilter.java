@@ -96,8 +96,8 @@ public class ASCIIFilter implements ImageFilter
 	static final String LARGE_LETTERS = "MQW";
 	//For ...
 	static final int COLOR_LIMIT = 255;
-	static final int SIZE = 10;
-	static final String ALPHABET = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	static final int SIZE = 6;
+	static final String ALPHABET = "@#%&+= 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	
 	//Functions
 	//
@@ -131,6 +131,23 @@ public class ASCIIFilter implements ImageFilter
         return temp; 
     }
     /**
+     * Calculates the sum of red, green, and blue values for the pixel (w, h) in img
+     * @param img the image from which the pixel is taken
+     * @param w the X coordinate of the pixel
+     * @param h the Y coordinate of the pixel
+     * @return returns INT value of R+G+B
+     */
+	private static int getRGBSum(BufferedImage img, int w, int h)
+    {
+    	Color color = null;
+    	color = new Color(img.getRGB(w, h));		//Get the color of the pixel
+		int r = color.getRed();							//	Get just the red
+		int g = color.getGreen();						//	Get just the green
+		int b = color.getBlue();						//	Get just the blue
+		
+		return (r+g+b);
+    }
+	/**
      * Calculates an average rgb dScore based on the bounds passed in representing the gridcell's boundaries
      * @param img the image from which the grid is taken
      * @param wStart the X coordinate of the starting coordinate or the leftmost X
@@ -142,18 +159,13 @@ public class ASCIIFilter implements ImageFilter
 	private static int rgbValueForBlock(BufferedImage img, int wStart, int hStart, int wStop, int hStop) 
     {
 		//Initializing some useful vars
-    	Color color = null;
-    	int r=0, g=0, b=0, rgbSum=0, rgbTotal=0;
+		int rgbSum = 0, rgbTotal = 0;
     	
 		for(int h = hStart; h < hStop; ++h)
 		{
 			for (int w = wStart; w < wStop; ++w)
 			{
-				color = new Color(img.getRGB(w, h));		//Get the color of the pixel
-				r = color.getRed();							//	Get just the red
-				g = color.getGreen();						//	Get just the green
-				b = color.getBlue();						//	Get just the blue
-				rgbSum = (r+g+b);
+				rgbSum = getRGBSum(img, w, h);
 				rgbTotal += rgbSum;
 			}
 		}
@@ -200,6 +212,7 @@ public class ASCIIFilter implements ImageFilter
 			{
 				//If something went wrong, tell user and die
 				System.out.println("Failure to sort char images");
+				System.err.print(e);
 				System.exit(-1);
 			}
 		}
@@ -217,6 +230,105 @@ public class ASCIIFilter implements ImageFilter
         //Returning list of sorted char images 
 		return listImgSet;
     }
+	private static List<Pair<String, Integer>> sortCharImages(char[] alphabet, int size, String[] prefixes)
+	{
+		//Data Structure to conveniently store Score Key, file name Value pairs
+				List<Pair<String, Integer>> listImgSet = new ArrayList<Pair<String,Integer>>(alphabet.length); 
+				String fileName = null;	int score = 0;
+				
+				//For every char image in alphabet -> should be: 1:1
+				for (String s : prefixes)
+				{
+					for (char x : alphabet)
+					{
+						try
+						{
+							//If x is blank (space)
+							if (x == SPACE) 										fileName = "resources\\BlankSpace.png"; 
+							//If x is in the upper case
+							else if (x >= CAPITAL_START && x <= CAPITAL_FIN) 		fileName = "resources\\Uppercase-" + s + x + ".png";
+							//If x is in the lower case
+							else if (x >= LOWERCASE_START && x <= LOWERCASE_FIN) 	fileName = "resources\\Lowercase-" + s + x + ".png";
+							//Else x is a number
+							else 													fileName = "resources\\" + s + x + ".png";
+							
+							//
+							BufferedImage img = ImageIO.read(new File(fileName));
+							
+							//Getting the score and adding it to the list
+							score = rgbValueForBlock(img, 0, 0, size, size);		//Getting the score
+							listImgSet.add(new Pair(fileName, score));	//Adding score to list
+							score = 0;												//Resetting score to 0 for next time 
+						}
+						catch (IOException e) 
+						{
+							//If something went wrong, tell user and die
+							System.out.println("Failure to sort char images");
+							System.err.print(e);
+							System.exit(-1);
+						}
+					}
+				}
+				
+				//Adding BLANKBLOCK to the list
+				/*try 
+				{
+					fileName = "resources\\BlankBlock.png";
+					BufferedImage i = ImageIO.read(new File(fileName)); 
+					score = rgbValueForBlock(i, 0, 0, size, size);
+					listImgSet.add(new Pair(fileName, score));	//Adding score to list
+				}
+				catch (IOException e) 
+				{
+					//If something went wrong, tell user and die
+					System.out.println("Failure to sort char images");
+					System.err.print(e);
+					System.exit(-1);
+				}*/
+				 
+				
+				
+				//Sorting least to greatest 
+		        Collections.sort(listImgSet, new Comparator<Map.Entry<String, Integer> >() 
+		        { 	//Writing comparator for Collections.sort
+		            public int compare(Map.Entry<String, Integer> o1,  
+		                               Map.Entry<String, Integer> o2) 
+		            { 
+		                return (o1.getValue()).compareTo(o2.getValue()); 
+		            } 
+		        }); 
+		        
+		        
+		        
+		        
+		        //Printing the list to external file for viewing 
+		     // print the sorted list to external text file
+				File output = new File("Sort_Log.txt");
+				try
+				{
+					output.delete();
+					if (output.createNewFile())
+					{
+						PrintWriter writer = new PrintWriter(output);
+						for (int i = 0; i < listImgSet.size(); ++i)
+						{
+							writer.print(i + "-- " + listImgSet.get(i).getKey() + ": " + listImgSet.get(i).getValue() + "\n");
+						}
+				        writer.close();
+					}
+				}
+				catch (IOException e) 
+				{	//If something went wrong, tell user and die
+					System.out.println("Failure to sort char images");
+					System.err.print(e);
+					System.exit(-1);					
+				}
+				
+		        
+		        //Returning list of sorted char images 
+				return listImgSet;
+	}
+	
 	/**
 	 * Scales the given image to square *scale* dimensions
 	 * @param scaleImage the image to be scaled down or up
@@ -253,6 +365,9 @@ public class ASCIIFilter implements ImageFilter
     	//Return the list of chars
     	return returnList;
     }
+	
+	
+	
 	/**
 	 * Generates all the char images with *size* dimensions for each char in *alphabet*  
 	 * @param alphabet contains all chars that will be used to generate the char images
@@ -295,12 +410,12 @@ public class ASCIIFilter implements ImageFilter
 			char[] c = {x};		//Char array only to print the char onto image using g.drawChars()
 			img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
 			g = img.createGraphics();
-			g.setColor(Color.WHITE);										//Image is created with black background
+			g.setColor(Color.BLACK);										//Image is created with black background
 			g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
 			g.setFont(f);													//Setting the right font to get 50 block size
 			fMetrics = g.getFontMetrics();
 			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g.setColor(Color.BLACK);										//Essentially setting font color to black
+			g.setColor(Color.WHITE);										//Setting font color to white
 			
 			//Lists containing special or weird characters
 			List<Character> descenderLetters = createSpecialCharsList(DESCENDER_LETTERS);
@@ -339,10 +454,142 @@ public class ASCIIFilter implements ImageFilter
 			catch (IOException e) 
 			{	//Tell the user there was a problem and die 
 				System.out.println("Failure to create " + x + " char image");
+				System.err.print(e);
 				System.exit(-1);
 			}
 		}
 	}
+	private static void genCharImages(char[] alphabet, int size, Color bkgd, Color font, String prefix)
+	{
+		//Initializing some vars
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);		//Initializing img to create graphics instance
+		Graphics2D g = img.createGraphics();											//Will use g to do some operations on the font and later, the image
+		FontMetrics fMetrics = null; Font f = null;
+		int blockSize = 0; int z = FONT_SIZE;
+		int fontWidth=0, fontHeight=0, currCharWidth=0;
+		
+		//Automatically find correct font size to get 50x50 blocks
+		while(blockSize<50)
+		{	//Cylces through a bunch of different sizes until it finds a size of roughly 50
+			f = new Font(FONT_NAME,FONT_STYLE, z++);					//Dynamically updating the font size until reaching block size of 50
+			g.setFont(f);												//		updating the font
+			fMetrics = g.getFontMetrics();								//		saving information to graphics in case this is final Font
+			
+			//Getting the max height of any char
+			fontHeight = fMetrics.getAscent();//-fMetrics.getDescent();
+			//Getting the Width
+			for (int b = 0; b < alphabet.length; ++b)
+			{	//Checks to see which char has the widest width
+				//		Java doesn't provide helpful fonts like they do with height 
+				currCharWidth = fMetrics.charsWidth(alphabet, b, 1);
+				if (currCharWidth > fontWidth) fontWidth = currCharWidth;
+			}			
+			
+			//Get the biggest value from width and height above 
+			if (fontWidth > fontHeight) blockSize = fontWidth; 
+			else blockSize = fontHeight;
+		}
+		
+		//Creating pure white block now that bkgd color is black instead of white
+		//Pre-setting some options for printing char on img
+		/*char[] blank = {' '};		//Char array only to print the char onto image using g.drawChars()
+		img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
+		g = img.createGraphics();
+		g.setColor(Color.WHITE);										//Image is created with black background
+		g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
+		g.setFont(f);													//Setting the right font to get 50 block size
+		fMetrics = g.getFontMetrics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setColor(Color.WHITE);										//Setting font color to white
+		
+		//Drawing the char on img
+		g.drawChars(blank,  0,  1,  (img.getWidth()/5),  img.getHeight()-(fMetrics.getDescent()/2));
+		g.dispose();
+		//Scaling down to desired size 
+		img = scale(img, size);
+		try { ImageIO.write(img, "png", new File("resources\\BlankBlock.png")); } 
+		catch (IOException e)
+		{ 	//Tell the user there was a problem and die 
+			System.out.println("Failure to create BLANKBLOCK char image");
+			System.err.print(e);
+			System.exit(-1);			
+		}*/
+		
+	
+		//Drawing our AlphaNumeric Images
+		for (char x : alphabet)
+		{
+			char[] c = {x};		//Char array only to print the char onto image using g.drawChars()
+			img = new BufferedImage(blockSize, blockSize, BufferedImage.TYPE_INT_ARGB);	
+			g = img.createGraphics();
+			g.setColor(bkgd);										//Image is created with black background
+			g.fillRect(0,  0,  img.getWidth(),  img.getHeight());			//	so painting background white
+			g.setFont(f);													//Setting the right font to get 50 block size
+			fMetrics = g.getFontMetrics();
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g.setColor(font);										//Setting font color to white
+			
+			//Lists containing special or weird characters
+			List<Character> descenderLetters = createSpecialCharsList(DESCENDER_LETTERS);
+			List<Character> largeLetters = createSpecialCharsList(LARGE_LETTERS);
+			
+			//Drawing char images
+			//
+			//Adding some conditional statements to correctly draw some troublesome chars
+			//		that look out of place if drawn by the default
+			//
+			//For letters that extend below baseline
+			if (descenderLetters.contains(x))
+					g.drawChars(c,  0,  1,  (img.getWidth()/8),  img.getHeight()-fMetrics.getDescent());
+			//For letters that are too big to be printed in middle
+			else if (largeLetters.contains(x))
+					g.drawChars(c,  0,  1,  0,  img.getHeight()-(fMetrics.getDescent()/2));
+			else 	g.drawChars(c,  0,  1,  (img.getWidth()/5),  img.getHeight()-(fMetrics.getDescent()/2));
+			
+			g.dispose();													//Garbage cleanup
+			
+			//Scaling down to desired size 
+			img = scale(img, size);
+			
+			//Writing the written char to a tangible file 
+			try
+			{
+				//If x is blank (space)
+				if (x == SPACE) ImageIO.write(img, "png", new File("resources\\BlankSpace.png"));
+				//If x is in the upper case
+				else if (x >= CAPITAL_START && x <= CAPITAL_FIN) ImageIO.write(img, "png", new File("resources\\Uppercase-" + prefix + x + ".png"));
+				//If x is in the lower case
+				else if (x >= LOWERCASE_START && x <= LOWERCASE_FIN) ImageIO.write(img, "png", new File("resources\\Lowercase-" + prefix + x + ".png"));
+				//Else X is one of the numbers
+				else ImageIO.write(img, "png", new File("resources\\" + prefix + x + ".png"));
+			}
+			catch (IOException e) 
+			{	//Tell the user there was a problem and die 
+				System.out.println("Failure to create " + prefix + x + " char image");
+				System.err.print(e);
+				System.exit(-1);
+			}
+		}
+	}
+	private static void generateImageSets(char[] alphabet, int size)
+	{ 
+		genCharImages(alphabet, size, Color.BLACK, Color.GRAY, "G");
+		genCharImages(alphabet, size, Color.BLACK, Color.LIGHT_GRAY, "LG"); 
+		genCharImages(alphabet, size, Color.BLACK, Color.WHITE, "W"); 
+		genCharImages(alphabet, size, Color.GRAY, Color.BLACK, "B");
+		genCharImages(alphabet, size, Color.DARK_GRAY, Color.BLACK, "BDG");
+		genCharImages(alphabet, size, Color.LIGHT_GRAY, Color.BLACK, "BLG");
+		genCharImages(alphabet, size, Color.GRAY, Color.BLACK, "BG");
+		genCharImages(alphabet, size, Color.BLACK, Color.DARK_GRAY, "DG");
+		genCharImages(alphabet, size, Color.LIGHT_GRAY, Color.WHITE, "WLG");
+	}
+	
+	
+	
+	
+	
+	
+	
 	//Filter Code
 	
 	@Override
@@ -381,19 +628,15 @@ public class ASCIIFilter implements ImageFilter
 			}
 		}		
 
-		//Sorting the grid cells from darkest to lightest
-		/*Collections.sort(grid, new Comparator<GridCell>() 
-		{	//Writing comparator for Collections.sort 
-            public int compare(GridCell o1, GridCell o2) 
-            { 
-                return o1.GetScore().compareTo(o2.GetScore()); 
-            } 
-        });*/
 
-		
 		//Creating alpha-numeric char images and sorting them 
-		alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
-		List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
+		//alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
+		generateImageSets(ALPHABET.toCharArray(), SIZE); 
+				
+		//List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
+		String[] prefixes = new String[] {"DG", "G", "LG", "W", "B", "BDG", "BLG", "BG", "WLG"} ; 
+		List<Pair<String,Integer>> charImgSet = sortCharImages(ALPHABET.toCharArray(), SIZE, prefixes);
+		
 	
 		
 		//Bucket code 
