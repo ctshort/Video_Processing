@@ -7,6 +7,8 @@ import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.FrameRecorder;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
 public class Ripper 
@@ -25,15 +27,24 @@ public class Ripper
 		
 		
 		//Instantiating the structure that converts the grabbed frames to images that can be stored 
-		Java2DFrameConverter converter = new Java2DFrameConverter();
+		//Java2DFrameConverter converter = new Java2DFrameConverter();
 		
 		//Storing the grabbed frame
-		Frame vidFrame = new Frame();
-		Frame audioFrame = new Frame(); 
+		//Frame vidFrame = new Frame();
+		//Frame audioFrame = new Frame(); 
 		
 		//The Buffered Image that will be written to disk 
-		BufferedImage im = null; 
+		//BufferedImage im = null; 
 		
+		
+		
+		//Testing ripping audio only 
+		ripAudio(args[0], args[2]);
+		ripFrames(args[0], args[1]); 
+		
+		
+		
+		/*
 		try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new File(args[0]));
 				FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(new File(args[0])))
 		{
@@ -49,7 +60,6 @@ public class Ripper
 			
 			//Saving the video frames
 			int frameCounter = 0;
-			//frameGrabber.setTimestamp(10100000L);
 			while((vidFrame = frameGrabber.grab()) != null
 				|| (audioFrame = audioGrabber.grabSamples()) != null)
 			{
@@ -57,7 +67,11 @@ public class Ripper
 				if(im != null)
 					ImageIO.write(im, "png", new File(args[1]+"\\frame"+(frameCounter++)+".png"));
 				
-				rec.recordSamples(audioFrame.samples);
+				if (rec.getTimestamp() <= audioGrabber.getTimestamp())
+				{
+						rec.setTimestamp(audioGrabber.getTimestamp());
+						rec.recordSamples(audioFrame.samples);
+				}
 			}
 						
 			frameGrabber.stop(); frameGrabber.close(); 
@@ -69,8 +83,71 @@ public class Ripper
 			System.out.println("FAILURE: "+e+"\n"); 
 			e.printStackTrace();
 		}
+		*/
 	}
+	private static void ripAudio(String ripFile, String outDir)
+	{
+		Frame f = new Frame(); 
+		
+		try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new File(ripFile)))
+		{
+			//Starting the grabber 
+			grabber.start();
+			
+			FFmpegFrameRecorder rec = new FFmpegFrameRecorder(outDir+"\\outputAudio.mp3", grabber.getAudioChannels()); 
+			rec.setSampleRate(grabber.getSampleRate());
+			rec.setAudioQuality(0);
+			rec.setAudioBitrate(grabber.getAudioBitrate());
+			rec.setAudioChannels(2);
+			rec.setAudioCodec(avcodec.AV_CODEC_ID_MP3);
+			rec.start();
+			
+			while((f = grabber.grabSamples()) != null)
+			{
+				if (rec.getTimestamp() <= grabber.getTimestamp())
+				{
+						rec.setTimestamp(grabber.getTimestamp());
+						rec.recordSamples(f.samples);
+				}
+			}
+			
+			grabber.stop(); grabber.close();
+			rec.stop(); rec.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("FAILURE: "+e+"\n"); 
+			e.printStackTrace();
+		}
+	}
+	private static void ripFrames(String ripFile, String outDir)
+	{ 
+		//Structures necessary to convert video frames to images
+		Java2DFrameConverter converter = new Java2DFrameConverter();
+		Frame f = new Frame();
+		BufferedImage im = null; 
 
+		
+		try(FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new File(ripFile)))
+		{
+			grabber.start();
+			
+			int frameCounter = 0; 
+			while ((f = grabber.grab()) != null)
+			{
+				im = converter.convert(f); 
+				if(im != null)
+					ImageIO.write(im, "png", new File(outDir+"\\frame"+(frameCounter++)+".png"));
+			}
+			
+			grabber.stop(); grabber.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("FAILURE: "+e+"\n"); 
+			e.printStackTrace();
+		}
+	}
 	private static void checkProperArgs(String[] args)
 	{
 		if (args.length != 3)
