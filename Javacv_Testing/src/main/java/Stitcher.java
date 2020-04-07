@@ -78,7 +78,7 @@ public class Stitcher
 	{
 		if (args.length != 2)
 		{
-			System.err.println("Correct usage: Splitter <dir_of_broken_videos> <dir_to_output_video>"); 
+			System.err.println("Correct usage: Stitcher <dir_of_broken_videos> <dir_to_output_video>"); 
 			System.exit(1);
 		}
 	}
