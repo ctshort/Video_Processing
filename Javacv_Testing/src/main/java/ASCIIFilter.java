@@ -42,6 +42,7 @@ public class ASCIIFilter implements ImageFilter
 	public ASCIIFilter()
 	{
 		filterName = "ASCII";
+		generateImageSets(ALPHABET.toCharArray(), SIZE); 
 	}
 	/**
 	 * Constructor that sets the private field filterName 
@@ -50,6 +51,7 @@ public class ASCIIFilter implements ImageFilter
 	public ASCIIFilter(String filter)
 	{
 		filterName = filter;
+		generateImageSets(ALPHABET.toCharArray(), SIZE); 
 	}
 	
 	private String filterName;
@@ -631,7 +633,7 @@ public class ASCIIFilter implements ImageFilter
 
 		//Creating alpha-numeric char images and sorting them 
 		//alphaNumImgGen(ALPHABET.toCharArray(), SIZE);
-		generateImageSets(ALPHABET.toCharArray(), SIZE); 
+		//generateImageSets(ALPHABET.toCharArray(), SIZE); 
 				
 		//List<Pair<String,Integer>> charImgSet = alphaNumImgSort(ALPHABET.toCharArray(), SIZE);
 		String[] prefixes = new String[] {"DG", "G", "LG", "W", "B", "BDG", "BLG", "BG", "WLG"} ; 
