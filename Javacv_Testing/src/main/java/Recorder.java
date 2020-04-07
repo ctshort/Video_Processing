@@ -40,7 +40,7 @@ public class Recorder
 			im = ImageIO.read(new File(args[0]+"\\filteredFrame"+(imageCounter++)+".png"));
 			
 			//Setting up the recorder 
-			FFmpegFrameRecorder rec = new FFmpegFrameRecorder(args[2]+"\\output.mp4", im.getWidth(), im.getHeight(), 2);
+			FFmpegFrameRecorder rec = new FFmpegFrameRecorder(args[2]+"\\"+args[3], im.getWidth(), im.getHeight(), 2);
 			
 			//Setting some stuff for FFmpegFrameRecorder to record properly 
 			rec.setFormat("mp4");
@@ -81,9 +81,9 @@ public class Recorder
 
 	private static void checkProperArgs(String[] args)
 	{
-		if (args.length != 3)
+		if (args.length != 4)
 		{
-			System.err.println("Correct Usage: Recorder <dir_of_filtered_frames> <dir_of_audio> <dir_to_output_vid>"); 
+			System.err.println("Correct Usage: Recorder <dir_of_filtered_frames> <dir_of_audio> <dir_to_output_vid> <output_name>"); 
 			System.exit(-1);
 		}
 	}
