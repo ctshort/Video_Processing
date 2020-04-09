@@ -306,7 +306,7 @@ public class ASCIIFilter implements ImageFilter
 		        
 		        //Printing the list to external file for viewing 
 		        // print the sorted list to external text file
-				File output = new File("Sort_Log.txt");
+				/*File output = new File("Sort_Log.txt");
 				try
 				{
 					output.delete();
@@ -325,7 +325,7 @@ public class ASCIIFilter implements ImageFilter
 					System.out.println("Failure to sort char images");
 					System.err.print(e);
 					System.exit(-1);					
-				}
+				}*/
 				
 		        
 		        //Returning list of sorted char images 
@@ -714,7 +714,7 @@ public class ASCIIFilter implements ImageFilter
 		
 		
 		//Printing the buckets for testing 
-		File bucketOutput = new File("bucket_Log_.txt");
+		/*File bucketOutput = new File("bucket_Log_.txt");
 		try
 		{
 			if(bucketOutput.exists()) bucketOutput.delete();					//Rewriting the file -> don't want any old stuff 
@@ -734,20 +734,9 @@ public class ASCIIFilter implements ImageFilter
 		{	//Tell user what went wrong and die 
 			System.out.println(e.getMessage());
 			System.exit(-1);
-		}
+		}*/
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+				
 		//Drawing the new image
 		BufferedImage imgToDraw = new BufferedImage(imageToFilter.getWidth(), imageToFilter.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2 = imgToDraw.createGraphics();
@@ -780,7 +769,7 @@ public class ASCIIFilter implements ImageFilter
 		int n = 1;													//Marks the line in the text file -> denotes which char is the 1st char or nth char listed
 		
         // print the sorted TreeMap to external text file
-		File output = new File("imgNumCount_Log_.txt");
+		/*File output = new File("imgNumCount_Log_.txt");
 		try
 		{
 			if(output.exists()) output.delete();					//Rewriting the file -> don't want any old stuff 
@@ -800,7 +789,7 @@ public class ASCIIFilter implements ImageFilter
 		{	//Tell user what went wrong and die 
 			System.out.println(e.getMessage());
 			System.exit(-1);
-		}
+		}*/
 		
 		//Return the filtered image
 		return imgToDraw;
